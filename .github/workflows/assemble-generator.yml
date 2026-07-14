@@ -1,0 +1,33 @@
+name: Assemble Max patch
+
+on:
+  push:
+    paths:
+      - '.generator_parts/**'
+      - '.github/workflows/assemble-generator.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Assemble and validate StudieII_Generator.maxpat
+        shell: bash
+        run: |
+          if [ ! -d .generator_parts ]; then
+            echo "Generator parts are already assembled."
+            exit 0
+          fi
+          cat .generator_parts/*.b64 | tr -d '\n' | base64 --decode > StudieII_Generator.maxpat
+          python -m json.tool StudieII_Generator.maxpat > /dev/null
+          rm -rf .generator_parts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add StudieII_Generator.maxpat .generator_parts
+          git commit -m "Assemble main Max/MSP generator patch"
+          git push
