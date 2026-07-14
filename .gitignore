@@ -1,0 +1,9 @@
+.DS_Store
+*.maxpat.autosave
+*.maxproj.autosave
+*.maxhelp.autosave
+__pycache__/
+*.pyc
+generated/
+tests/*_report.json
+tests/test_report.json
