@@ -2,9 +2,14 @@ import json
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PATCHES = [
+    'StudieII_Generator.maxpat',
+    'StudieII_SquareDisplay.maxpat',
+    'StudieII_Voice.maxpat',
+]
 reports = []
 
-for filename in ['StudieII_Generator.maxpat', 'StudieII_Voice.maxpat']:
+for filename in PATCHES:
     path = os.path.join(ROOT, filename)
     data = json.load(open(path, encoding='utf-8'))['patcher']
     boxes = {entry['box']['id']: entry['box'] for entry in data['boxes']}
@@ -23,6 +28,7 @@ for filename in ['StudieII_Generator.maxpat', 'StudieII_Voice.maxpat']:
             assert 0 <= destination_inlet < destination_inlets, (filename, destination_id, destination_inlet, destination_inlets)
 
     js_dependencies = []
+    patch_dependencies = []
     for box in boxes.values():
         text = box.get('text', '')
         if text.startswith('js '):
@@ -33,13 +39,19 @@ for filename in ['StudieII_Generator.maxpat', 'StudieII_Voice.maxpat']:
             patch_name = text.split()[1]
             if not patch_name.endswith('.maxpat'):
                 patch_name += '.maxpat'
+            patch_dependencies.append(patch_name)
             assert os.path.exists(os.path.join(ROOT, patch_name)), (filename, 'missing poly patch', patch_name)
+        if text == 'StudieII_SquareDisplay':
+            patch_name = 'StudieII_SquareDisplay.maxpat'
+            patch_dependencies.append(patch_name)
+            assert os.path.exists(os.path.join(ROOT, patch_name)), (filename, 'missing abstraction', patch_name)
 
     reports.append({
         'file': filename,
         'boxes': len(boxes),
         'patchlines': len(data['lines']),
         'jsDependencies': js_dependencies,
+        'patchDependencies': patch_dependencies,
     })
 
 print(json.dumps({'status': 'ok', 'patches': reports}, indent=2))
