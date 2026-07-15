@@ -1,60 +1,64 @@
-# Stockhausen Studie II — Max/MSP reconstruction
+# Stockhausen Studie II — Max/MSP Reconstruction
 
-Алгоритмическая реконструкция и генеративная вариация *Studie II* для Max/MSP.
+An algorithmic reconstruction and generative extension of Karlheinz Stockhausen’s *Studie II* for Max/MSP.
 
-Проект сохраняет систему преобразований исходного ряда, построение десяти числовых квадратов, банки частот/длительностей/интенсивностей и формальные процедуры пяти частей. Вместо ряда Стокхаузена `3 5 1 4 2` можно подать любую перестановку чисел `1–5`, например `1 5 4 2 3`.
+*Studie II* was created in 1954 at the NWDR Studio for Electronic Music in Cologne, which later became part of WDR. During this period, Stockhausen was developing the principles of integral serialism and investigating how an electronic composition could be constructed from a unified numerical system.
 
-## Запуск
+Using the series `3 5 1 4 2`, he organized frequencies, durations, intensities, temporal relationships, and large-scale form. Based on available research literature and technical data, this project reconstructs these procedures in Max/MSP. In addition to the original series, the system can use any permutation of the numbers `1–5`, such as `1 5 4 2 3`, to produce new strict serial variations.
 
-1. Клонируйте репозиторий и откройте `StudieII_Generator.maxpat`.
-2. Включите DSP кнопкой `ezdac~`.
-3. Нажмите сообщение `stockhausen` для исходного ряда либо кнопку рядом с `zl.scramble 1 2 3 4 5` для случайной перестановки.
-4. Убедитесь, что таблица заполнилась 380 событиями и появилась партитуроподобная графика.
-5. Нажмите `play`.
+## Running the Project
 
-Поле `timescale` управляет скоростью: `1.` воспроизводит расчётную длительность модели, более крупные значения замедляют пьесу. Громкость в патче намеренно ограничена, но пять синусов, умноженные на перекрывающиеся события, всё равно умеют доказывать существование акустической физики довольно убедительно.
+1. Clone the repository and open `StudieII_Generator.maxpat`.
+2. Enable DSP using the `ezdac~` button.
+3. Click the `stockhausen` message to load the original series, or use the button next to `zl.scramble 1 2 3 4 5` to generate a random permutation.
+4. Make sure that the table has been populated with 380 events and that the score-like visualization has appeared.
+5. Click `play`.
 
-## Режимы
+The `timescale` field controls playback speed: `1.` corresponds to the calculated duration of the model, while larger values slow the piece down.
 
-- **Original / historical corrections**: ряд `3 5 1 4 2` и выписанные из реконструкции коррекции пятой части.
-- **Random permutation / strict serial variation**: новый пятичисловой ряд, пересчитанные `R1–R5` и `U1–U5`, без привязанных к оригинальной партитуре поэлементных коррекций.
+The output level is intentionally limited, although five sine oscillators combined with overlapping events can still provide a remarkably persuasive demonstration of acoustic physics.
 
-При выборе случайной перестановки historical corrections автоматически отключаются. При возврате к `stockhausen` они снова включаются.
+## Modes
 
-## Архитектура
+* **Original / historical corrections** — the original series `3 5 1 4 2` together with the fifth-section corrections derived from the reconstruction.
+* **Random permutation / strict serial variation** — a new five-number series with recalculated `R1–R5` and `U1–U5`, without the element-specific corrections associated with the original score.
+
+Historical corrections are disabled automatically when a random permutation is selected. Returning to `stockhausen` enables them again.
+
+## Architecture
 
 ### Max/MSP
 
-- `StudieII_Generator.maxpat` — основной интерфейс, события, transport, визуализация и аудиотракт;
-- `StudieII_SquareDisplay.maxpat` — отдельная видимая панель всех квадратов `R1–R5` и `U1–U5`;
-- `StudieII_Voice.maxpat` — один голос: пять `cycle~`, суммирование, огибающая, click guard и панорамирование;
-- `poly~ StudieII_Voice 16` — шестнадцать параллельных голосов;
-- `jit.cellblock` — квадраты и таблица 380 событий;
-- `jit.lcd` — партитуроподобное изображение сгенерированных прямоугольников;
-- `zl.scramble 1 2 3 4 5` — случайная перестановка исходного ряда.
+* `StudieII_Generator.maxpat` — main interface, event management, transport, visualization, and audio signal path;
+* `StudieII_SquareDisplay.maxpat` — a separate panel displaying the squares `R1–R5` and `U1–U5`;
+* `StudieII_Voice.maxpat` — a single voice containing five `cycle~` oscillators, summing, envelope control, click protection, and panning;
+* `poly~ StudieII_Voice 16` — sixteen parallel voices;
+* `jit.cellblock` — displays the numerical squares and the table of 380 events;
+* `jit.lcd` — renders a score-like image of the generated rectangles;
+* `zl.scramble 1 2 3 4 5` — generates a random permutation of the source series.
 
-### JavaScript-модули
+### JavaScript Modules
 
-- `studie2_series_core.js` — чистые операции построения `R1–R5/U1–U5`;
-- `studie2_series_engine.js` — связь квадратов с Max;
-- `studie2_material_core.js` — 81 частота, 61 длительность и 61 интенсивность;
-- `studie2_material_engine.js` — связь банков материала с Max;
-- `studie2_events_parameters.js` — индексы, параметры, длительности и старты;
-- `studie2_events_envelopes.js` — амплитудные профили пяти частей;
-- `studie2_events_emit.js` — сборка музыкальных событий;
-- `studie2_events_core.js` — публичный генератор полной формы;
-- `studie2_event_engine.js` — передача событий в таблицу и scheduler;
-- `studie2_scheduler.js` — transport и распределение событий между голосами;
-- `studie2_score_view.js` — визуализация прямоугольников партитуры;
-- `studie2_voice_control.js` — управляющие сообщения для одного голоса; сами осцилляторы остаются видимыми объектами Max.
+* `studie2_series_core.js` — constructs `R1–R5` and `U1–U5`;
+* `studie2_series_engine.js` — connects the numerical squares to Max;
+* `studie2_material_core.js` — generates 81 frequencies, 61 durations, and 61 intensity values;
+* `studie2_material_engine.js` — connects the material banks to Max;
+* `studie2_events_parameters.js` — event indices, parameters, durations, and onset times;
+* `studie2_events_envelopes.js` — amplitude profiles for the five sections;
+* `studie2_events_emit.js` — assembles the musical events;
+* `studie2_events_core.js` — generates the complete form;
+* `studie2_event_engine.js` — sends events to the table and scheduler;
+* `studie2_scheduler.js` — handles transport and distributes events among the voices;
+* `studie2_score_view.js` — visualizes the score rectangles;
+* `studie2_voice_control.js` — generates control messages for a single voice, while the oscillators remain visible as Max objects.
 
-Логика намеренно не упакована в один непрозрачный `everything.js`. Ключевые ступени процесса можно открыть, увидеть и проверить отдельно, потому что проект о программируемой композиции, а не о поклонении чёрному ящику.
+The logic is deliberately not packed into a single opaque `everything.js`. The principal stages of the generative process can be opened, inspected, and tested independently, because the project concerns programmable composition rather than the worship of a black box.
 
-## Источники и ограничения
+## Sources and Limitations
 
-Метод основан прежде всего на Csound-реконструкции Йоахима Хайнца и предоставленных исследовательских материалах. Подробности и границы точности описаны в `SOURCES_AND_LIMITS.md`.
+The method is based primarily on Joachim Heintz’s Csound reconstruction and the available research materials. Further details and the limits of the reconstruction’s accuracy are documented in `SOURCES_AND_LIMITS.md`.
 
-Цифровой синтез не заявляет буквального воспроизведения осцилляторов WDR, магнитной ленты, монтажных транзиентов, акустической реверберационной камеры и ручного исполнения огибающих 1954 года.
+The digital model does not claim to reproduce literally the WDR studio oscillators, magnetic tape, editing transients, acoustic reverberation chamber, or manually shaped amplitude envelopes used in 1954.
 
 ## Tests
 
@@ -64,8 +68,10 @@ node tests/test_all_permutations.js
 python tests/validate_maxpat.py
 ```
 
-Тесты проверяют исходный ряд, генеративный пример, все 120 перестановок, 380 событий и структуру Max-патчей.
+The tests verify the original series, the generative example, all 120 possible permutations, the complete set of 380 events, and the structure of the Max patches.
 
-## Возможные сообщения Max Console
+## Possible Max Console Messages
 
-Если Max не находит `StudieII_Voice.maxpat`, `StudieII_SquareDisplay.maxpat` или `.js`, значит файлы были разнесены по разным папкам. Держите содержимое репозитория вместе либо добавьте папку проекта в Max Search Path. Если не создаётся `rev3~`, сухой тракт можно временно направить к `ezdac~` без реверберации.
+If Max cannot locate `StudieII_Voice.maxpat`, `StudieII_SquareDisplay.maxpat`, or one of the `.js` files, the repository contents have probably been distributed across different folders. Keep the project files together, or add the project directory to the Max Search Path.
+
+If `rev3~` cannot be instantiated, the dry signal can temporarily be connected directly to `ezdac~`, bypassing the reverb.
